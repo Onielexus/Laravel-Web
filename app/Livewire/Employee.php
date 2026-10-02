@@ -28,10 +28,14 @@ class Employee extends Component
     public bool $isEditing = false;
     public bool $showSuccessModal = false;
 
+    public function mount(): void
+    {
+        $this->generateNextEmployeeNumber();
+    }
+
     protected function rules(): array
     {
         return [
-            // Forces exactly 3 digits matching 001 to 100
             'employeeNumber' => [
                 'required',
                 'string',
@@ -41,7 +45,7 @@ class Employee extends Component
             'firstName' => 'required|string|max:255',
             'lastName'  => 'required|string|max:255',
             'email'     => 'required|email|max:255|unique:employees,email,' . $this->employeeId,
-            'phone'     => 'nullable|string|max:30',
+            'phone'     => 'nullable|string|max:11', // Updated to max 11 characters
             'position'  => 'required|string|max:255',
             'hiredAt'   => 'required|date|before_or_equal:today',
         ];
@@ -81,6 +85,11 @@ class Employee extends Component
 
         if ($this->employeeId === $id) {
             $this->resetInputFields();
+        } else {
+            // Recalculate next number if a record was deleted while creating
+            if (!$this->isEditing) {
+                $this->generateNextEmployeeNumber();
+            }
         }
     }
 
@@ -110,16 +119,31 @@ class Employee extends Component
         $this->showSuccessModal = false;
     }
 
+    private function generateNextEmployeeNumber(): void
+    {
+        if (!$this->isEditing) {
+            $latestEmployee = EmployeeModel::latest('id')->first();
+
+            if ($latestEmployee && is_numeric($latestEmployee->employee_number)) {
+                $nextNumber = (int) $latestEmployee->employee_number + 1;
+            } else {
+                $nextNumber = 1;
+            }
+
+            $this->employeeNumber = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        }
+    }
+
     private function resetInputFields(): void
     {
         $this->reset(['employeeId', 'employeeNumber', 'firstName', 'lastName', 'email', 'phone', 'position', 'hiredAt']);
         $this->isEditing = false;
+        $this->generateNextEmployeeNumber();
     }
 
     public function render(): View
     {
         return view('livewire.employee', [
-            // Replaced ->get() with ->paginate(10)
             'employees' => EmployeeModel::latest()->paginate(4),
         ]);
     }

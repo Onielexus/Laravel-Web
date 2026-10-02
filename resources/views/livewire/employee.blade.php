@@ -26,7 +26,8 @@
                             wire:model="employeeNumber"
                             maxlength="3"
                             placeholder="001"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm @error('employeeNumber') border-red-500 @enderror">
+                            {{ !$isEditing ? 'readonly' : '' }}
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm @error('employeeNumber') border-red-500 @enderror {{ !$isEditing ? 'bg-gray-100 cursor-not-allowed' : '' }}">
                         @error('employeeNumber')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -75,7 +76,10 @@
                     {{-- Phone --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <input type="text" wire:model="phone"
+                        <input type="text"
+                            wire:model="phone"
+                            maxlength="11"
+                            placeholder="09*********"
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm @error('phone') border-red-500 @enderror">
                         @error('phone')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
